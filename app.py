@@ -16,7 +16,6 @@ def index():
 @app.route('/convert_to_pdf', methods=['POST'])
 def convert_to_pdf():
     files = request.files.getlist('files')
-
     image_list = []
 
     for file in files:
@@ -29,7 +28,6 @@ def convert_to_pdf():
         try:
             img = Image.open(path)
 
-            # Force convert to RGB (important for JPG/PNG)
             if img.mode != 'RGB':
                 img = img.convert('RGB')
 
@@ -42,7 +40,6 @@ def convert_to_pdf():
         return "No valid images uploaded."
 
     pdf_path = os.path.join(UPLOAD_FOLDER, "output.pdf")
-
     image_list[0].save(pdf_path, save_all=True, append_images=image_list[1:])
 
     return send_file(pdf_path, as_attachment=True)
@@ -68,6 +65,46 @@ def convert_to_word():
 
     return send_file(doc_path, as_attachment=True)
 
+
+# 🔥 PDF → JPG
+@app.route('/pdf_to_jpg', methods=['POST'])
+def pdf_to_jpg():
+    from pdf2image import convert_from_path
+
+    file = request.files['file']
+    path = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(path)
+
+    images = convert_from_path(path)
+
+    image_path = os.path.join(UPLOAD_FOLDER, "output.jpg")
+    images[0].save(image_path, 'JPEG')
+
+    return send_file(image_path, as_attachment=True)
+
+
+# 🔥 WORD → PDF
+@app.route('/word_to_pdf', methods=['POST'])
+def word_to_pdf():
+    from fpdf import FPDF
+
+    file = request.files['file']
+    path = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(path)
+
+    doc = Document(path)
+
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+
+    for para in doc.paragraphs:
+        pdf.multi_cell(0, 10, para.text)
+
+    pdf_path = os.path.join(UPLOAD_FOLDER, "output.pdf")
+    pdf.output(pdf_path)
+
+    return send_file(pdf_path, as_attachment=True)
 
 
 if __name__ == "__main__":
