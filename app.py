@@ -99,8 +99,6 @@ def word_to_pdf():
     return send_file(pdf_path, as_attachment=True)
 
 
-# ❌ PDF → JPG (TEMP DISABLED — ERROR AATA HAI RENDER PE)
-# Isko abhi use mat karo
 
 
 if __name__ == "__main__":
