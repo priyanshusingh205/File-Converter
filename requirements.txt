@@ -2,5 +2,4 @@ flask
 pillow
 python-docx
 gunicorn
-pdf2image
-fpdf
+reportlab

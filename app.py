@@ -12,7 +12,8 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 def index():
     return render_template('index.html')
 
-# JPG → PDF
+
+# ✅ JPG → PDF
 @app.route('/convert_to_pdf', methods=['POST'])
 def convert_to_pdf():
     files = request.files.getlist('files')
@@ -27,10 +28,8 @@ def convert_to_pdf():
 
         try:
             img = Image.open(path)
-
             if img.mode != 'RGB':
                 img = img.convert('RGB')
-
             image_list.append(img)
 
         except Exception as e:
@@ -45,7 +44,7 @@ def convert_to_pdf():
     return send_file(pdf_path, as_attachment=True)
 
 
-# JPG → WORD
+# ✅ JPG → WORD
 @app.route('/convert_to_word', methods=['POST'])
 def convert_to_word():
     file = request.files['file']
@@ -66,45 +65,42 @@ def convert_to_word():
     return send_file(doc_path, as_attachment=True)
 
 
-# 🔥 PDF → JPG
-@app.route('/pdf_to_jpg', methods=['POST'])
-def pdf_to_jpg():
-    from pdf2image import convert_from_path
-
-    file = request.files['file']
-    path = os.path.join(UPLOAD_FOLDER, file.filename)
-    file.save(path)
-
-    images = convert_from_path(path)
-
-    image_path = os.path.join(UPLOAD_FOLDER, "output.jpg")
-    images[0].save(image_path, 'JPEG')
-
-    return send_file(image_path, as_attachment=True)
-
-
-# 🔥 WORD → PDF
+# ✅ WORD → PDF (FIXED VERSION)
 @app.route('/word_to_pdf', methods=['POST'])
 def word_to_pdf():
-    from fpdf import FPDF
+    from reportlab.platypus import SimpleDocTemplate, Paragraph
+    from reportlab.lib.styles import getSampleStyleSheet
 
     file = request.files['file']
+
+    if file.filename == "":
+        return "No file selected"
+
     path = os.path.join(UPLOAD_FOLDER, file.filename)
     file.save(path)
 
     doc = Document(path)
 
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size=12)
-
+    text = ""
     for para in doc.paragraphs:
-        pdf.multi_cell(0, 10, para.text)
+        text += para.text + "\n"
 
     pdf_path = os.path.join(UPLOAD_FOLDER, "output.pdf")
-    pdf.output(pdf_path)
+
+    pdf = SimpleDocTemplate(pdf_path)
+    styles = getSampleStyleSheet()
+
+    story = []
+    for line in text.split("\n"):
+        story.append(Paragraph(line, styles["Normal"]))
+
+    pdf.build(story)
 
     return send_file(pdf_path, as_attachment=True)
+
+
+# ❌ PDF → JPG (TEMP DISABLED — ERROR AATA HAI RENDER PE)
+# Isko abhi use mat karo
 
 
 if __name__ == "__main__":
