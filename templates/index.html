@@ -1,209 +1,45 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>File Converter Pro</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- AOS Animation -->
+    <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
+
     <style>
-        .drop-zone {
-            border: 2px dashed #cbd5e0;
-            border-radius: 0.5rem;
-            transition: all 0.3s ease;
-        }
-        .drop-zone.dragover {
-            border-color: #4299e1;
-            background-color: #ebf8ff;
-        }
-        .file-list {
-            max-height: 200px;
-            overflow-y: auto;
-        }
-    </style>
-</head>
-<body class="bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 min-h-screen flex items-center justify-center p-4">
-
-    <div class="max-w-2xl w-full bg-white rounded-2xl shadow-2xl p-8">
-        <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-gray-800 mb-2">🚀 File Converter Pro</h1>
-            <p class="text-gray-600">Convert files instantly — free & fast</p>
-        </div>
-
-        <!-- Drag and Drop Zone -->
-        <div id="drop-zone" class="drop-zone p-12 text-center cursor-pointer mb-6">
-            <div class="text-6xl mb-4">📁</div>
-            <h3 class="text-xl font-semibold text-gray-700 mb-2">Drag & Drop Files Here</h3>
-            <p class="text-gray-500 mb-4">or click to browse</p>
-            <input type="file" id="file-input" multiple class="hidden" accept=".jpg,.jpeg,.png,.doc,.docx,.pdf">
-            <button type="button" onclick="document.getElementById('file-input').click()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
-                Choose Files
-            </button>
-        </div>
-
-        <!-- File List -->
-        <div id="file-list" class="file-list hidden mb-6">
-            <h4 class="font-semibold text-gray-700 mb-2">Selected Files:</h4>
-            <ul id="files" class="space-y-2"></ul>
-        </div>
-
-        <!-- Conversion Options -->
-        <div id="conversion-options" class="hidden">
-            <h4 class="font-semibold text-gray-700 mb-4">Choose Conversion Type:</h4>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <button id="jpg-to-pdf" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
-                    JPG → PDF
-                </button>
-                <button id="jpg-to-word" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
-                    JPG → Word
-                </button>
-                <button id="word-to-pdf" class="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-lg transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
-                    Word → PDF
-                </button>
-            </div>
-        </div>
-
-        <!-- Hidden Forms -->
-        <form id="jpg-pdf-form" action="/convert_to_pdf" method="post" enctype="multipart/form-data" class="hidden">
-            <input type="file" name="files" multiple>
-            <button type="submit"></button>
-        </form>
-        <form id="jpg-word-form" action="/convert_to_word" method="post" enctype="multipart/form-data" class="hidden">
-            <input type="file" name="file">
-            <button type="submit"></button>
-        </form>
-        <form id="word-pdf-form" action="/word_to_pdf" method="post" enctype="multipart/form-data" class="hidden">
-            <input type="file" name="file">
-            <button type="submit"></button>
-        </form>
-    </div>
-
-    <script>
-        const dropZone = document.getElementById('drop-zone');
-        const fileInput = document.getElementById('file-input');
-        const fileList = document.getElementById('file-list');
-        const filesUl = document.getElementById('files');
-        const conversionOptions = document.getElementById('conversion-options');
-        const jpgToPdfBtn = document.getElementById('jpg-to-pdf');
-        const jpgToWordBtn = document.getElementById('jpg-to-word');
-        const wordToPdfBtn = document.getElementById('word-to-pdf');
-
-        let selectedFiles = [];
-
-        // Drag and drop events
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('dragover');
-        });
-
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('dragover');
-        });
-
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('dragover');
-            const files = Array.from(e.dataTransfer.files);
-            handleFiles(files);
-        });
-
-        // File input change
-        fileInput.addEventListener('change', (e) => {
-            const files = Array.from(e.target.files);
-            handleFiles(files);
-        });
-
-        function handleFiles(files) {
-            selectedFiles = files;
-            updateFileList();
-            updateConversionOptions();
+        body {
+            background: linear-gradient(135deg, #4facfe, #a18cd1);
+            min-height: 100vh;
+            color: white;
         }
 
-        function updateFileList() {
-            filesUl.innerHTML = '';
-            selectedFiles.forEach((file, index) => {
-                const li = document.createElement('li');
-                li.className = 'flex justify-between items-center bg-gray-100 p-2 rounded';
-                li.innerHTML = `
-                    <span>${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)</span>
-                    <button onclick="removeFile(${index})" class="text-red-500 hover:text-red-700">✕</button>
-                `;
-                filesUl.appendChild(li);
-            });
-            fileList.classList.remove('hidden');
+        .card {
+            border-radius: 20px;
+            transition: 0.3s;
         }
 
-        function removeFile(index) {
-            selectedFiles.splice(index, 1);
-            updateFileList();
-            updateConversionOptions();
+        .card:hover {
+            transform: translateY(-10px) scale(1.03);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
         }
 
-        function updateConversionOptions() {
-            if (selectedFiles.length === 0) {
-                conversionOptions.classList.add('hidden');
-                return;
-            }
-
-            conversionOptions.classList.remove('hidden');
-
-            const hasImage = selectedFiles.some(file => file.type.startsWith('image/'));
-            const hasWord = selectedFiles.some(file => file.type === 'application/msword' || file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-
-            jpgToPdfBtn.disabled = !hasImage;
-            jpgToWordBtn.disabled = !hasImage || selectedFiles.length > 1;
-            wordToPdfBtn.disabled = !hasWord || selectedFiles.length > 1;
+        .upload-box {
+            border: 2px dashed white;
+            padding: 40px;
+            border-radius: 20px;
+            transition: 0.3s;
         }
 
-        // Conversion button events
-        jpgToPdfBtn.addEventListener('click', () => {
-            const form = document.getElementById('jpg-pdf-form');
-            const input = form.querySelector('input');
-            const dataTransfer = new DataTransfer();
-            selectedFiles.forEach(file => dataTransfer.items.add(file));
-            input.files = dataTransfer.files;
-            form.querySelector('button').click();
-        });
-
-        jpgToWordBtn.addEventListener('click', () => {
-            const form = document.getElementById('jpg-word-form');
-            const input = form.querySelector('input');
-            const dt = new DataTransfer();
-            dt.items.add(selectedFiles[0]);
-            input.files = dt.files;
-            form.querySelector('button').click();
-        });
-
-        wordToPdfBtn.addEventListener('click', () => {
-            const form = document.getElementById('word-pdf-form');
-            const input = form.querySelector('input');
-            const dt = new DataTransfer();
-            dt.items.add(selectedFiles[0]);
-            input.files = dt.files;
-            form.querySelector('button').click();
-        });
-    </script>
-
-</body>
-</html><!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Converter Pro</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .drop-zone {
-            border: 2px dashed #cbd5e0;
-            border-radius: 0.5rem;
-            transition: all 0.3s ease;
+        .upload-box:hover {
+            background: rgba(255,255,255,0.1);
         }
-        .drop-zone.dragover {
-            border-color: #4299e1;
-            background-color: #ebf8ff;
-        }
-        .file-list {
-            max-height: 200px;
-            overflow-y: auto;
+
+        h1 {
+            font-weight: bold;
         }
     </style>
 </head>
@@ -211,45 +47,45 @@
 <body>
 
 <div class="container text-center mt-5">
-    <h1>🚀 File Converter Pro</h1>
-    <p class="text-white">Convert files instantly — free & fast</p>
 
-    <div class="row mt-4">
+    <h1 data-aos="fade-down">🚀 File Converter Pro</h1>
+    <p data-aos="fade-up">Convert files instantly — free & fast</p>
 
-        <!-- JPG → PDF -->
-        <div class="col-md-6">
-            <div class="card p-4 shadow">
-                <h4>JPG → PDF</h4>
+    <!-- Drag & Drop -->
+    <div class="upload-box mt-4" data-aos="zoom-in">
+        <h4>📂 Drag & Drop Files</h4>
+        <p>or click below</p>
+        <input type="file" class="form-control mt-3">
+    </div>
+
+    <!-- Tools -->
+    <div class="row mt-5">
+
+        <div class="col-md-4" data-aos="fade-up">
+            <div class="card p-3 shadow">
+                <h5>JPG → PDF</h5>
                 <form action="/convert_to_pdf" method="post" enctype="multipart/form-data">
-                    <input type="file" name="files" multiple class="form-control mb-3" required>
+                    <input type="file" name="files" multiple class="form-control mb-2" required>
                     <button class="btn btn-primary w-100">Convert</button>
                 </form>
             </div>
         </div>
 
-        <!-- JPG → WORD -->
-        <div class="col-md-6">
-            <div class="card p-4 shadow">
-                <h4>JPG → Word</h4>
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+            <div class="card p-3 shadow">
+                <h5>JPG → Word</h5>
                 <form action="/convert_to_word" method="post" enctype="multipart/form-data">
-                    <input type="file" name="file" class="form-control mb-3" required>
+                    <input type="file" name="file" class="form-control mb-2" required>
                     <button class="btn btn-success w-100">Convert</button>
                 </form>
             </div>
         </div>
 
-    </div>
-
-    <div class="row mt-4">
-
-
-    
-        <!-- WORD → PDF -->
-        <div class="col-md-6">
-            <div class="card p-4 shadow">
-                <h4>Word → PDF</h4>
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+            <div class="card p-3 shadow">
+                <h5>Word → PDF</h5>
                 <form action="/word_to_pdf" method="post" enctype="multipart/form-data">
-                    <input type="file" name="file" class="form-control mb-3" required>
+                    <input type="file" name="file" class="form-control mb-2" required>
                     <button class="btn btn-danger w-100">Convert</button>
                 </form>
             </div>
@@ -258,6 +94,12 @@
     </div>
 
 </div>
+
+<!-- Scripts -->
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script>
+    AOS.init();
+</script>
 
 </body>
 </html>
