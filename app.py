@@ -77,8 +77,7 @@ def merge_pdf():
 
 
 # PDF → JPG
-@app.route('/pdf_to_jpg', methods=['POST'])
-def pdf_to_jpg():
+# from pdf2image import convert_from_path
     file = request.files['file']
     base_name = file.filename.split('.')[0]
 
