@@ -1,104 +1,96 @@
 from flask import Flask, render_template, request, send_file
 from PIL import Image
 from docx import Document
+from PyPDF2 import PdfMerger
+from pdf2image import convert_from_path
 import os
+import time
 
 app = Flask(__name__)
 
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+
 @app.route('/')
 def index():
     return render_template('index.html')
 
 
-# ✅ JPG → PDF
+# JPG → PDF
 @app.route('/convert_to_pdf', methods=['POST'])
 def convert_to_pdf():
     files = request.files.getlist('files')
-    image_list = []
+    base_name = files[0].filename.split('.')[0]
 
+    images = []
     for file in files:
-        if file.filename == "":
-            continue
-
         path = os.path.join(UPLOAD_FOLDER, file.filename)
         file.save(path)
+        img = Image.open(path)
+        if img.mode != 'RGB':
+            img = img.convert('RGB')
+        images.append(img)
 
-        try:
-            img = Image.open(path)
-            if img.mode != 'RGB':
-                img = img.convert('RGB')
-            image_list.append(img)
+    output = os.path.join(UPLOAD_FOLDER, base_name + ".pdf")
+    images[0].save(output, save_all=True, append_images=images[1:])
 
-        except Exception as e:
-            return f"Error: {str(e)}"
-
-    if not image_list:
-        return "No valid images uploaded."
-
-    pdf_path = os.path.join(UPLOAD_FOLDER, "output.pdf")
-    image_list[0].save(pdf_path, save_all=True, append_images=image_list[1:])
-
-    return send_file(pdf_path, as_attachment=True)
+    return send_file(output, as_attachment=True)
 
 
-# ✅ JPG → WORD
+# JPG → WORD
 @app.route('/convert_to_word', methods=['POST'])
 def convert_to_word():
     file = request.files['file']
-
-    if file.filename == "":
-        return "No file selected"
+    base_name = file.filename.split('.')[0]
 
     path = os.path.join(UPLOAD_FOLDER, file.filename)
     file.save(path)
 
     doc = Document()
-    doc.add_paragraph("Image inserted below:")
     doc.add_picture(path)
 
-    doc_path = os.path.join(UPLOAD_FOLDER, "output.docx")
-    doc.save(doc_path)
+    output = os.path.join(UPLOAD_FOLDER, base_name + ".docx")
+    doc.save(output)
 
-    return send_file(doc_path, as_attachment=True)
+    return send_file(output, as_attachment=True)
 
 
-# ✅ WORD → PDF (FIXED VERSION)
-@app.route('/word_to_pdf', methods=['POST'])
-def word_to_pdf():
-    from reportlab.platypus import SimpleDocTemplate, Paragraph
-    from reportlab.lib.styles import getSampleStyleSheet
+# MERGE PDF
+@app.route('/merge_pdf', methods=['POST'])
+def merge_pdf():
+    files = request.files.getlist('files')
+    merger = PdfMerger()
 
+    base_name = str(int(time.time()))
+
+    for file in files:
+        path = os.path.join(UPLOAD_FOLDER, file.filename)
+        file.save(path)
+        merger.append(path)
+
+    output = os.path.join(UPLOAD_FOLDER, base_name + "_merged.pdf")
+    merger.write(output)
+    merger.close()
+
+    return send_file(output, as_attachment=True)
+
+
+# PDF → JPG
+@app.route('/pdf_to_jpg', methods=['POST'])
+def pdf_to_jpg():
     file = request.files['file']
-
-    if file.filename == "":
-        return "No file selected"
+    base_name = file.filename.split('.')[0]
 
     path = os.path.join(UPLOAD_FOLDER, file.filename)
     file.save(path)
 
-    doc = Document(path)
+    images = convert_from_path(path)
 
-    text = ""
-    for para in doc.paragraphs:
-        text += para.text + "\n"
+    output = os.path.join(UPLOAD_FOLDER, base_name + ".jpg")
+    images[0].save(output, "JPEG")
 
-    pdf_path = os.path.join(UPLOAD_FOLDER, "output.pdf")
-
-    pdf = SimpleDocTemplate(pdf_path)
-    styles = getSampleStyleSheet()
-
-    story = []
-    for line in text.split("\n"):
-        story.append(Paragraph(line, styles["Normal"]))
-
-    pdf.build(story)
-
-    return send_file(pdf_path, as_attachment=True)
-
-
+    return send_file(output, as_attachment=True)
 
 
 if __name__ == "__main__":
