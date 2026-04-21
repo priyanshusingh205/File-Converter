@@ -2,7 +2,6 @@ from flask import Flask, render_template, request, send_file
 from PIL import Image
 from docx import Document
 from PyPDF2 import PdfMerger
-from pdf2image import convert_from_path
 import os
 import time
 
@@ -10,7 +9,6 @@ app = Flask(__name__)
 
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
 
 @app.route('/')
 def index():
@@ -21,16 +19,28 @@ def index():
 @app.route('/convert_to_pdf', methods=['POST'])
 def convert_to_pdf():
     files = request.files.getlist('files')
-    base_name = files[0].filename.split('.')[0]
 
+    if not files:
+        return "No files uploaded"
+
+    base_name = str(int(time.time()))
     images = []
+
     for file in files:
+        if file.filename == "":
+            continue
+
         path = os.path.join(UPLOAD_FOLDER, file.filename)
         file.save(path)
+
         img = Image.open(path)
         if img.mode != 'RGB':
             img = img.convert('RGB')
+
         images.append(img)
+
+    if not images:
+        return "No valid images"
 
     output = os.path.join(UPLOAD_FOLDER, base_name + ".pdf")
     images[0].save(output, save_all=True, append_images=images[1:])
@@ -42,7 +52,11 @@ def convert_to_pdf():
 @app.route('/convert_to_word', methods=['POST'])
 def convert_to_word():
     file = request.files['file']
-    base_name = file.filename.split('.')[0]
+
+    if file.filename == "":
+        return "No file selected"
+
+    base_name = str(int(time.time()))
 
     path = os.path.join(UPLOAD_FOLDER, file.filename)
     file.save(path)
@@ -60,34 +74,22 @@ def convert_to_word():
 @app.route('/merge_pdf', methods=['POST'])
 def merge_pdf():
     files = request.files.getlist('files')
-    merger = PdfMerger()
 
+    if not files:
+        return "No files uploaded"
+
+    merger = PdfMerger()
     base_name = str(int(time.time()))
 
     for file in files:
-        path = os.path.join(UPLOAD_FOLDER, file.filename)
-        file.save(path)
-        merger.append(path)
+        if file.filename.endswith(".pdf"):
+            path = os.path.join(UPLOAD_FOLDER, file.filename)
+            file.save(path)
+            merger.append(path)
 
     output = os.path.join(UPLOAD_FOLDER, base_name + "_merged.pdf")
     merger.write(output)
     merger.close()
-
-    return send_file(output, as_attachment=True)
-
-
-# PDF → JPG
-# from pdf2image import convert_from_path
-    file = request.files['file']
-    base_name = file.filename.split('.')[0]
-
-    path = os.path.join(UPLOAD_FOLDER, file.filename)
-    file.save(path)
-
-    images = convert_from_path(path)
-
-    output = os.path.join(UPLOAD_FOLDER, base_name + ".jpg")
-    images[0].save(output, "JPEG")
 
     return send_file(output, as_attachment=True)
 

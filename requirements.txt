@@ -1,6 +1,5 @@
 flask
 pillow
 python-docx
-gunicorn
-reportlab
 PyPDF2
+gunicorn
